@@ -135,7 +135,7 @@ if img_file and model:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.image(img, caption="Original Image", use_column_width=True)
+        st.image(img, caption="Original Image", use_container_width=True)
     
     # Get confidence threshold
     conf_threshold = st.slider(
@@ -173,7 +173,7 @@ if img_file and model:
                 annotated = r.plot()
                 if annotated is not None:
                     annotated_rgb = annotated[:, :, ::-1]
-                    st.image(annotated_rgb, caption="Detection Result", use_column_width=True)
+                    st.image(annotated_rgb, caption="Detection Result", use_container_width=True)
                     st.success(f"✅ Detected {detection_count} food items")
                 else:
                     logger.warning("Failed to generate annotation plot")
