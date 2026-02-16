@@ -43,30 +43,26 @@ logger.info("Application started")
 # =====================================
 @st.cache_resource
 def load_model(model_choice):
-    """Load YOLO model from local files
-    Supports best.pt and last.pt trained on food dataset
-    """
+    """Load YOLO model from local files"""
     model_path = CONFIG["model"]["best_model_path"] if model_choice == "Best Model (best.pt)" else CONFIG["model"]["last_model_path"]
     
     try:
-        logger.info(f"Loading local model: {model_path}")
-        st.sidebar.write(f"🔄 Loading: {model_path}")
+        logger.info(f"Loading model: {model_path}")
+        st.sidebar.write(f"Loading: {model_path}...")
         
         if not os.path.exists(model_path):
             logger.error(f"Model file not found: {model_path}")
-            st.sidebar.error(f"❌ File '{model_path}' not found!")
-            st.sidebar.info("💡 Upload custom model using 'Upload Custom Model' option")
+            st.sidebar.error(f"Error: File '{model_path}' not found!")
             return None
         
         model = YOLO(model_path)
         logger.info(f"Model loaded successfully: {model_path}")
-        st.sidebar.success(f"✅ Model loaded!")
+        st.sidebar.success(f"Model loaded: {model_path}")
         return model
         
     except Exception as e:
         logger.error(f"Error loading model: {str(e)}", exc_info=True)
-        st.sidebar.error(f"❌ Error: {str(e)[:100]}")
-        st.sidebar.info("💡 Try uploading a custom model")
+        st.sidebar.error(f"Error: {str(e)[:100]}")
         return None
 
 # =====================================
@@ -103,10 +99,9 @@ st.set_page_config(
     page_title=CONFIG["app"]["title"],
     layout=CONFIG["app"]["page_layout"]
 )
-st.title("🍽️ Food Calorie Tracker")
+st.title("Food Calorie Tracker")
 st.write("Track your daily calorie intake by uploading meal images.")
 
-# Initialize session state
 if "meals" not in st.session_state:
     st.session_state.meals = []
 
@@ -114,60 +109,30 @@ if "meals" not in st.session_state:
 # Model Selection
 # =====================================
 with st.sidebar:
-    st.subheader("⚙️ Model Settings")
-    model_source = st.radio(
-        "Model Source:",
-        ["Local Model (best.pt/last.pt)", "Upload Custom Model"],
+    st.subheader("Model Settings")
+    model_choice = st.radio(
+        "Select YOLO Model:",
+        ["Best Model (best.pt)", "Last Model (last.pt)"],
         index=0,
     )
-    
-    if model_source == "Local Model (best.pt/last.pt)":
-        model_choice = st.radio(
-            "Select Model:",
-            ["Best Model (best.pt)", "Last Model (last.pt)"],
-            index=0,
-        )
-        model = load_model(model_choice)
-    else:
-        st.write("📤 **Upload your custom YOLO model**")
-        uploaded_model = st.file_uploader("Choose .pt file", type=["pt"])
-        if uploaded_model:
-            try:
-                # Save uploaded model temporarily
-                temp_model_path = f"/tmp/{uploaded_model.name}"
-                with open(temp_model_path, "wb") as f:
-                    f.write(uploaded_model.getbuffer())
-                
-                logger.info(f"Loading custom model: {uploaded_model.name}")
-                st.sidebar.write("🔄 Loading custom model...")
-                model = YOLO(temp_model_path)
-                logger.info("Custom model loaded successfully")
-                st.sidebar.success("✅ Custom model loaded!")
-            except Exception as e:
-                logger.error(f"Error loading custom model: {str(e)}")
-                st.sidebar.error(f"❌ Error: {str(e)[:100]}")
-                model = None
-        else:
-            st.info("💡 Upload a .pt model file to get started")
-            model = None
+
+model = load_model(model_choice)
 
 # =====================================
 # Main App - Image Upload & Detection
 # =====================================
-st.subheader("📷 Upload Meal Image")
+st.subheader("Upload Meal Image")
 img_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 
 if img_file and model:
     logger.info(f"Image uploaded: {img_file.name}")
     
-    # Load and display image
     img = Image.open(img_file).convert("RGB")
     col1, col2 = st.columns(2)
     
     with col1:
         st.image(img, caption="Original Image", use_container_width=True)
     
-    # Get confidence threshold
     conf_threshold = st.slider(
         "Confidence Threshold",
         min_value=CONFIG["detection"]["min_confidence"],
@@ -176,9 +141,8 @@ if img_file and model:
         step=CONFIG["model"]["confidence_step"]
     )
     
-    # Run detection
     img_array = np.array(img)
-    with st.spinner("🔍 Detecting food..."):
+    with st.spinner("Detecting food..."):
         logger.info(f"Running detection with confidence: {conf_threshold}")
         results = model.predict(img_array, conf=conf_threshold, verbose=False)
     
@@ -187,7 +151,6 @@ if img_file and model:
         boxes = r.boxes
         class_names_raw = r.names or {}
         
-        # Clean up class names
         class_names = {}
         for class_id, name in class_names_raw.items():
             clean_name = name.split('-')[0].strip().lower()
@@ -197,22 +160,19 @@ if img_file and model:
         logger.info(f"Detection complete: {detection_count} items found")
         st.write(f"**Found {detection_count} detections**")
         
-        # Display bounding box image
         with col2:
             try:
                 annotated = r.plot()
                 if annotated is not None:
                     annotated_rgb = annotated[:, :, ::-1]
                     st.image(annotated_rgb, caption="Detection Result", use_container_width=True)
-                    st.success(f"✅ Detected {detection_count} food items")
+                    st.success(f"Detected {detection_count} food items")
                 else:
-                    logger.warning("Failed to generate annotation plot")
-                    st.error("❌ Failed to generate plot")
+                    st.error("Failed to generate plot")
             except Exception as e:
-                logger.error(f"Error generating plot: {str(e)}", exc_info=True)
-                st.error(f"❌ Error: {str(e)}")
+                logger.error(f"Error generating plot: {str(e)}")
+                st.error(f"Error: {str(e)}")
         
-        # Show detection table
         st.write("**Detected Items:**")
         detected_data = []
         for idx, box in enumerate(boxes):
@@ -225,11 +185,9 @@ if img_file and model:
             })
         st.dataframe(detected_data, hide_index=True)
         
-        # Add detections to meals
-        st.subheader("📋 Add to Meals")
+        st.subheader("Add to Meals")
         for idx, box in enumerate(boxes):
             class_id = int(box.cls[0])
-            confidence = float(box.conf[0])
             class_name = class_names.get(class_id, f"Class {class_id}")
             default_calories = FOOD_CALORIES.get(class_name.lower(), 100)
             
@@ -254,7 +212,7 @@ if img_file and model:
                 )
             
             with col_c:
-                if st.button("➕ Add", key=f"btn_{idx}"):
+                if st.button("Add", key=f"btn_{idx}"):
                     st.session_state.meals.append({
                         "name": food_name,
                         "calories": int(calories)
@@ -266,15 +224,12 @@ if img_file and model:
         st.warning("No detections found. Try lowering the confidence threshold.")
 
 elif img_file and not model:
-    logger.error("Image uploaded but model not loaded")
-    st.error("❌ Model not loaded")
-elif not img_file:
-    st.info("📁 Upload an image to start")
+    st.error("Model not loaded")
 
 # =====================================
 # Manual Meal Entry
 # =====================================
-st.subheader("➕ Add Meal Manually")
+st.subheader("Add Meal Manually")
 with st.form("manual_form"):
     col1, col2, col3 = st.columns([2, 1, 1])
     
@@ -284,10 +239,9 @@ with st.form("manual_form"):
         meal_calories = st.number_input("Calories", min_value=0, value=100)
     with col3:
         st.write("")
-        submitted = st.form_submit_button("➕ Add")
+        submitted = st.form_submit_button("Add")
     
     if submitted and meal_name:
-        # Validate inputs
         valid_name, msg_name = validate_meal_name(meal_name)
         valid_cal, msg_cal = validate_calories(meal_calories)
         
@@ -297,19 +251,17 @@ with st.form("manual_form"):
                 "calories": int(meal_calories)
             })
             logger.info(f"Manual meal added: {meal_name} ({meal_calories} kcal)")
-            st.success("✅ Added!")
+            st.success("Added!")
         else:
             if not valid_name:
                 st.error(msg_name)
-                logger.warning(f"Meal name validation failed: {meal_name}")
             if not valid_cal:
                 st.error(msg_cal)
-                logger.warning(f"Calories validation failed: {meal_calories}")
 
 # =====================================
 # Display Meals & Download
 # =====================================
-st.subheader("📊 Today's Meals")
+st.subheader("Today's Meals")
 
 if st.session_state.meals:
     meal_data = []
@@ -324,11 +276,7 @@ if st.session_state.meals:
     st.dataframe(meal_data, hide_index=True)
     st.metric("Total Calories", total)
     
-    # Download button
     col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        pass
     
     with col2:
         if CONFIG["download"]["csv_enabled"]:
@@ -347,16 +295,13 @@ if st.session_state.meals:
             filename = f"meals_{timestamp}.csv"
             
             st.download_button(
-                label="📥 Download CSV",
+                label="Download CSV",
                 data=csv_data,
                 file_name=filename,
                 mime="text/csv"
             )
-            logger.info(f"Download CSV prepared: {filename}")
     
-    # Clear button
-    if st.button("🗑️ Clear All"):
-        logger.info(f"Cleared {len(st.session_state.meals)} meals from session")
+    if st.button("Clear All"):
         st.session_state.meals = []
         st.rerun()
 else:
