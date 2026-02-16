@@ -43,28 +43,40 @@ logger.info("Application started")
 # =====================================
 @st.cache_resource
 def load_model(model_choice):
-    """Load YOLO model once and cache it"""
-    model_path = CONFIG["model"]["best_model_path"] if model_choice == "Best Model (best.pt)" else CONFIG["model"]["last_model_path"]
+    """Load YOLO model once and cache it
+    - Try local model files first (best.pt, last.pt)
+    - Fallback to pretrained yolov8n if local files not available
+    """
+    # Determine which local model to try
+    if model_choice == "Best Model (best.pt)":
+        model_path = CONFIG["model"]["best_model_path"]
+    else:
+        model_path = CONFIG["model"]["last_model_path"]
     
     try:
-        logger.info(f"Loading model: {model_path}")
-        st.sidebar.write(f"🔄 Loading: {model_path}")
+        # Try loading local model first
+        if os.path.exists(model_path):
+            logger.info(f"Loading local model: {model_path}")
+            st.sidebar.write(f"🔄 Loading: {model_path}")
+            model = YOLO(model_path)
+            logger.info(f"Model loaded successfully: {model_path}")
+            st.sidebar.success(f"✅ Model loaded: {model_path}")
+            return model
         
-        if not os.path.exists(model_path):
-            logger.error(f"Model file not found: {model_path}")
-            st.sidebar.error(f"❌ File '{model_path}' not found!")
-            st.sidebar.write("📋 Available files:")
-            for f in sorted(os.listdir(".")):
-                st.sidebar.write(f"  • {f}")
-            return None
+        # Fallback to pretrained model if local file not found
+        logger.warning(f"Local model not found: {model_path}")
+        logger.info("Falling back to pretrained YOLOv8 Nano model")
+        st.sidebar.warning(f"📥 Downloading YOLOv8 Nano (pretrained)...")
         
-        model = YOLO(model_path)
-        logger.info(f"Model loaded successfully: {model_path}")
-        st.sidebar.success(f"✅ Model loaded!")
+        model = YOLO('yolov8n.pt')  # Download pretrained model
+        logger.info("Pretrained YOLOv8 Nano loaded successfully")
+        st.sidebar.success("✅ Model loaded: YOLOv8 Nano (pretrained)")
         return model
+        
     except Exception as e:
         logger.error(f"Error loading model: {str(e)}", exc_info=True)
-        st.sidebar.error(f"❌ Error: {str(e)}")
+        st.sidebar.error(f"❌ Error loading model: {str(e)[:100]}")
+        st.sidebar.info("💡 Try refreshing the page or check logs")
         return None
 
 # =====================================
