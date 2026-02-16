@@ -4,7 +4,7 @@ Test validators and core functionality
 """
 
 import pytest
-from validators import validate_meal_name, validate_calories
+from food_validators import validate_meal_name, validate_calories
 
 
 class TestMealNameValidation:
