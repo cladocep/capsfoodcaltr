@@ -1,5 +1,7 @@
-# Model files (terlalu besar)
+# Model files - EXCEPT best.pt and last.pt (kept for deployment)
 *.pt
+!best.pt
+!last.pt
 
 # Logs
 *.log
