@@ -9,7 +9,7 @@ import logging
 from io import StringIO
 from datetime import datetime
 from pathlib import Path
-from validators import validate_meal_name, validate_calories
+from food_validators import validate_meal_name, validate_calories
 
 # =====================================
 # Configuration & Logging Setup
