@@ -1,0 +1,22 @@
+app:
+  title: "Food Calorie Tracker"
+  page_layout: "wide"
+  
+model:
+  best_model_path: "best.pt"
+  last_model_path: "last.pt"
+  default_confidence: 0.25
+  confidence_step: 0.05
+  
+detection:
+  min_confidence: 0.0
+  max_confidence: 1.0
+  
+logging:
+  level: "INFO"
+  file: "app.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+download:
+  csv_enabled: true
+  include_total: true
