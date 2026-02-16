@@ -43,40 +43,30 @@ logger.info("Application started")
 # =====================================
 @st.cache_resource
 def load_model(model_choice):
-    """Load YOLO model once and cache it
-    - Try local model files first (best.pt, last.pt)
-    - Fallback to pretrained yolov8n if local files not available
+    """Load YOLO model from local files
+    Supports best.pt and last.pt trained on food dataset
     """
-    # Determine which local model to try
-    if model_choice == "Best Model (best.pt)":
-        model_path = CONFIG["model"]["best_model_path"]
-    else:
-        model_path = CONFIG["model"]["last_model_path"]
+    model_path = CONFIG["model"]["best_model_path"] if model_choice == "Best Model (best.pt)" else CONFIG["model"]["last_model_path"]
     
     try:
-        # Try loading local model first
-        if os.path.exists(model_path):
-            logger.info(f"Loading local model: {model_path}")
-            st.sidebar.write(f"🔄 Loading: {model_path}")
-            model = YOLO(model_path)
-            logger.info(f"Model loaded successfully: {model_path}")
-            st.sidebar.success(f"✅ Model loaded: {model_path}")
-            return model
+        logger.info(f"Loading local model: {model_path}")
+        st.sidebar.write(f"🔄 Loading: {model_path}")
         
-        # Fallback to pretrained model if local file not found
-        logger.warning(f"Local model not found: {model_path}")
-        logger.info("Falling back to pretrained YOLOv8 Nano model")
-        st.sidebar.warning(f"📥 Downloading YOLOv8 Nano (pretrained)...")
+        if not os.path.exists(model_path):
+            logger.error(f"Model file not found: {model_path}")
+            st.sidebar.error(f"❌ File '{model_path}' not found!")
+            st.sidebar.info("💡 Upload custom model using 'Upload Custom Model' option")
+            return None
         
-        model = YOLO('yolov8n.pt')  # Download pretrained model
-        logger.info("Pretrained YOLOv8 Nano loaded successfully")
-        st.sidebar.success("✅ Model loaded: YOLOv8 Nano (pretrained)")
+        model = YOLO(model_path)
+        logger.info(f"Model loaded successfully: {model_path}")
+        st.sidebar.success(f"✅ Model loaded!")
         return model
         
     except Exception as e:
         logger.error(f"Error loading model: {str(e)}", exc_info=True)
-        st.sidebar.error(f"❌ Error loading model: {str(e)[:100]}")
-        st.sidebar.info("💡 Try refreshing the page or check logs")
+        st.sidebar.error(f"❌ Error: {str(e)[:100]}")
+        st.sidebar.info("💡 Try uploading a custom model")
         return None
 
 # =====================================
@@ -125,13 +115,41 @@ if "meals" not in st.session_state:
 # =====================================
 with st.sidebar:
     st.subheader("⚙️ Model Settings")
-    model_choice = st.radio(
-        "Select YOLO Model:",
-        ["Best Model (best.pt)", "Last Model (last.pt)"],
+    model_source = st.radio(
+        "Model Source:",
+        ["Local Model (best.pt/last.pt)", "Upload Custom Model"],
         index=0,
     )
-
-model = load_model(model_choice)
+    
+    if model_source == "Local Model (best.pt/last.pt)":
+        model_choice = st.radio(
+            "Select Model:",
+            ["Best Model (best.pt)", "Last Model (last.pt)"],
+            index=0,
+        )
+        model = load_model(model_choice)
+    else:
+        st.write("📤 **Upload your custom YOLO model**")
+        uploaded_model = st.file_uploader("Choose .pt file", type=["pt"])
+        if uploaded_model:
+            try:
+                # Save uploaded model temporarily
+                temp_model_path = f"/tmp/{uploaded_model.name}"
+                with open(temp_model_path, "wb") as f:
+                    f.write(uploaded_model.getbuffer())
+                
+                logger.info(f"Loading custom model: {uploaded_model.name}")
+                st.sidebar.write("🔄 Loading custom model...")
+                model = YOLO(temp_model_path)
+                logger.info("Custom model loaded successfully")
+                st.sidebar.success("✅ Custom model loaded!")
+            except Exception as e:
+                logger.error(f"Error loading custom model: {str(e)}")
+                st.sidebar.error(f"❌ Error: {str(e)[:100]}")
+                model = None
+        else:
+            st.info("💡 Upload a .pt model file to get started")
+            model = None
 
 # =====================================
 # Main App - Image Upload & Detection
