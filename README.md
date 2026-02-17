@@ -231,3 +231,25 @@ Created for Food Calorie Tracking capstone project.
 ## 📧 Support
 
 For issues or questions, check the logs in `app.log` for detailed error information.
+
+## ❓ FAQ - Frequently Asked Questions
+
+### Q: Where are the model files (best.pt, last.pt)?
+
+**A:** Model files were removed from git during history cleanup. See [MODEL_SETUP.md](MODEL_SETUP.md) for download instructions or read [PANDUAN_SETUP_ID.md](PANDUAN_SETUP_ID.md) (Bahasa Indonesia).
+
+**Quick Fix:**
+```bash
+python setup_models.py --check  # Check status
+python setup_models.py --mock   # Create test files
+```
+
+**Download real models:** https://universe.roboflow.com/ayu-asipq/calory
+
+### Q: Why were they removed?
+
+**A:** Large files (200MB+ each) don't belong in git repositories. See [HISTORY_CLEANUP.md](HISTORY_CLEANUP.md) for details.
+
+### Q: Can I commit them back?
+
+**A:** Not recommended. Download separately or use Git LFS. See [MODEL_SETUP.md](MODEL_SETUP.md).
