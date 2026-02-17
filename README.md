@@ -2,6 +2,9 @@
 
 An intelligent food detection and calorie tracking application using YOLOv12 deep learning model and Streamlit web framework.
 
+> ⚠️ **IMPORTANT**: This application requires model files (`best.pt` and `last.pt`) that are **NOT included** in the repository.  
+> 📋 **See [MODEL_SETUP.md](MODEL_SETUP.md) for download instructions** before running the app.
+
 ## 📋 Features
 
 - ✅ **Real-time Food Detection** - Automatic detection of 13 Indonesian food types using YOLO
@@ -39,7 +42,8 @@ The model can detect 13 Indonesian food categories:
 
 1. **Clone/Download the project**
 ```bash
-cd caps4
+git clone https://github.com/cladocep/capsfoodcaltr.git
+cd capsfoodcaltr
 ```
 
 2. **Install dependencies**
@@ -47,16 +51,27 @@ cd caps4
 pip install -r requirements.txt
 ```
 
-3. **Download pre-trained model**
-The app expects `best.pt` or `last.pt` in the project directory.
+3. **🔴 REQUIRED: Download Model Files**
 
-> ⚠️ **Note**: Model files are NOT included in the git repository due to their large size.
-> You need to download or train the models separately and place them in the project root.
-> 
-> - `best.pt` - Best performing model weights
-> - `last.pt` - Last checkpoint
-> 
-> See `HISTORY_CLEANUP.md` for information about git repository cleanup.
+The app **requires** `best.pt` and `last.pt` to work. These files are NOT in the repository.
+
+**Quick Setup:**
+```bash
+# Check if models are present
+python setup_models.py --check
+
+# Option A: Download from Roboflow (Recommended)
+# Visit: https://universe.roboflow.com/ayu-asipq/calory
+# Download YOLOv12 format and place best.pt & last.pt in project root
+
+# Option B: Create mock files for testing (won't detect food)
+python setup_models.py --mock
+```
+
+**📖 For detailed instructions, see [MODEL_SETUP.md](MODEL_SETUP.md)**
+
+> **Why are they missing?** Model files were removed during git history cleanup (see `HISTORY_CLEANUP.md`).  
+> Large binary files (200MB+ each) don't belong in git repositories.
 
 ## 🏃 Running the Application
 

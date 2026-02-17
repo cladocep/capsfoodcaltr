@@ -1,4 +1,7 @@
-# Model files - EXCEPT best.pt and last.pt (kept for deployment)
+# Model files - EXCEPT best.pt and last.pt
+# Note: best.pt and last.pt can be tracked if needed, but it's NOT recommended
+# due to large file sizes (200MB+ each). Better to download separately.
+# See MODEL_SETUP.md for instructions.
 *.pt
 !best.pt
 !last.pt
