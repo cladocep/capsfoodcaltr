@@ -1,0 +1,22 @@
+# Git attributes for proper file handling
+
+# Model files - these should use Git LFS if tracked
+*.pt filter=lfs diff=lfs merge=lfs -text
+
+# Python files
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+
+# Ensure consistent line endings
+* text=auto
+
+# Binary files
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.pdf binary

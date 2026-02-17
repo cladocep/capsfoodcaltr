@@ -48,7 +48,15 @@ pip install -r requirements.txt
 ```
 
 3. **Download pre-trained model**
-The app expects `best.pt` or `last.pt` in the project directory. These are provided.
+The app expects `best.pt` or `last.pt` in the project directory.
+
+> ⚠️ **Note**: Model files are NOT included in the git repository due to their large size.
+> You need to download or train the models separately and place them in the project root.
+> 
+> - `best.pt` - Best performing model weights
+> - `last.pt` - Last checkpoint
+> 
+> See `HISTORY_CLEANUP.md` for information about git repository cleanup.
 
 ## 🏃 Running the Application
 
@@ -74,15 +82,21 @@ pytest test_app.py -v
 
 ```
 .
-├── app.py                 # Main Streamlit application
-├── config.yaml           # Configuration file
-├── validators.py         # Input validation functions
-├── test_app.py          # Unit tests
-├── requirements.txt     # Python dependencies
-├── best.pt             # Trained YOLOv12 model (best weights)
-├── last.pt             # Trained YOLOv12 model (last checkpoint)
-├── app.log             # Application logs
-└── README.md           # This file
+├── app.py                    # Main Streamlit application
+├── config.yaml              # Configuration file
+├── validators.py            # Input validation functions
+├── food_validators.py       # Food-specific validation
+├── test_app.py             # Unit tests
+├── requirements.txt        # Python dependencies
+├── packages.txt            # System packages
+├── .gitignore             # Git ignore patterns
+├── .gitattributes         # Git file handling rules
+├── best.pt                # Trained YOLOv12 model (download separately)
+├── last.pt                # Trained YOLOv12 model (download separately)
+├── app.log                # Application logs (gitignored)
+├── HISTORY_CLEANUP.md     # Git history cleanup documentation
+├── README.md              # This file
+└── READMEcal.md          # Additional documentation
 ```
 
 ## ⚙️ Configuration
