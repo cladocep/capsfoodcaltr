@@ -194,30 +194,18 @@ if img_file and model:
             col_a, col_b, col_c = st.columns([2, 1, 1])
             
             with col_a:
-                food_name = st.text_input(
-                    "Food name",
-                    value=class_name,
-                    key=f"name_{idx}",
-                    label_visibility="collapsed"
-                )
+                st.write(f"**{class_name}**")
             
             with col_b:
-                calories = st.number_input(
-                    "Calories",
-                    value=default_calories,
-                    min_value=0,
-                    step=10,
-                    key=f"cal_{idx}",
-                    label_visibility="collapsed"
-                )
+                st.write(f"{default_calories} kcal")
             
             with col_c:
                 if st.button("Add", key=f"btn_{idx}"):
                     st.session_state.meals.append({
-                        "name": food_name,
-                        "calories": int(calories)
+                        "name": class_name,
+                        "calories": int(default_calories)
                     })
-                    logger.info(f"Added meal: {food_name} ({calories} kcal)")
+                    logger.info(f"Added meal: {class_name} ({default_calories} kcal)")
                     st.rerun()
     else:
         logger.warning(f"No detections found with confidence threshold: {conf_threshold}")
